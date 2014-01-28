@@ -187,7 +187,7 @@
 		},
 
 		submit: function (event) {
-			window.alert(this.orderModel.toJSON());		
+			window.alert(JSON.stringify(this.orderModel.toJSON()));		
 			this.orderModel.save();
 		},
 
