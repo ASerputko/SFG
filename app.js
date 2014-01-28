@@ -13,6 +13,22 @@
 
 (function ($, Backbone) {
 
+	Backbone.emulateJSON = true;
+
+	var sizes = [
+		{id: 1, size: "590 x 420 мм" },
+		{id: 2, size: "840 х 590 мм" },
+		{id: 3, size: "1190 х 840 мм" },
+		{id: 4, size: "1680 х 1190 мм" },
+		{id: 5, size: "2380 х 1680 мм" }
+	];
+
+	var types = [
+		{id: 1, type: "бумага" },
+		{id: 2, type: "пластик" },
+		{id: 3, type: "холст" }
+	];
+
 	var prices = [
 		{size_id: 1, type_id: 1, price: '49 грн' },
 		{size_id: 2, type_id: 1, price: '69 грн' },
@@ -31,7 +47,52 @@
 		{size_id: 5, type_id: 3, price: '1399 грн' }
 	];
 
+	var SizeModel = Backbone.Model.extend({
+		
+		defaults: {
+			size: 0
+		},
+
+		getSize: function () {
+			return this.get('size');
+		},
+
+		setSize: function (value, options) {
+			this.set('size', value, options);
+		}
+
+	});
+
+	var SizeCollection = Backbone.Collection.extend({
+
+		model: SizeModel
+
+	});
+
+	var TypeModel = Backbone.Model.extend({
+
+		defaults: {
+			type: ''
+		},
+
+		getType: function () {
+			return this.get('type');
+		},
+
+		setType: function (value, options) {
+			this.set('type', value, options);
+		}
+
+	});
+
+	var TypeCollection = Backbone.Collection.extend({
+		
+		model: TypeModel
+
+	});
+
 	var PriceModel = Backbone.Model.extend({
+		
 		defaults: {
 			size_id: 1,
 			type_id: 1,
@@ -64,19 +125,40 @@
 			this.set('price', value, {silent: true});
 			this.trigger('change:price');
 		}
+
 	});
 
 	var PriceCollection = Backbone.Collection.extend({
+		
 		model: PriceModel
+
 	}); 
 
+
+	var OrderModel = Backbone.Model.extend({
+
+		url: 'mail.php',
+
+		defaults: {
+			mail: '',
+			phone: '',
+			price: '',
+			type: '',
+			size: ''
+		}
+
+	});
 
 	/* Main View */
 	var MainView = Backbone.View.extend({
 
 		initialize: function () {
+			this.sizeCollection = new SizeCollection(sizes);
+			this.typeCollection = new TypeCollection(types);
 			this.priceCollection = new PriceCollection(prices);
+
 			this.priceModel = new PriceModel();
+			this.orderModel = new OrderModel();
 
 			this.listenTo(this.priceModel, 'change:size_id', this.changePrice);
 			this.listenTo(this.priceModel, 'change:type_id', this.changePrice);
@@ -88,7 +170,25 @@
 
 		events: {
 			'change input[name="size"]': 'changeSize',
-			'change input[name="paper"]': 'changeType'
+			'change input[name="paper"]': 'changeType',
+			'change #mail': 'changeMail',
+			'change #phone': 'changePhone',
+			'click button:first': 'submit'
+		},
+
+		changeMail: function () {
+			var mail = this.$('#mail').val();
+			this.orderModel.set({mail: mail});
+		},
+
+		changePhone: function () {
+			var phone = this.$('#phone').val();
+			this.orderModel.set({phone: phone});
+		},
+
+		submit: function (event) {
+			window.alert(this.orderModel.toJSON());		
+			this.orderModel.save();
 		},
 
 		changeSize: function () {
@@ -116,6 +216,16 @@
 			}, this);
 
 			this.priceModel.setPrice(model.getPrice());
+
+			var price = model.getPrice();
+			var type = this.typeCollection.get(model.getTypeId()).getType();
+			var size = this.sizeCollection.get(model.getSizeId()).getSize();
+
+			this.orderModel.set({
+				price: price,
+				type: type,
+				size: size
+			});
 		},
 
 		updatePrice: function () {
