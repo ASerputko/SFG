@@ -13,7 +13,7 @@
 
 (function ($, Backbone) {
 
-	Backbone.emulateJSON = true;
+	// Backbone.emulateJSON = true;
 
 	var sizes = [
 		{id: 1, size: "590 x 420 мм" },
@@ -187,8 +187,13 @@
 		},
 
 		submit: function (event) {
-			window.alert(JSON.stringify(this.orderModel.toJSON()));		
-			this.orderModel.save();
+			// window.alert(JSON.stringify(this.orderModel.toJSON()));		
+			// this.orderModel.save(null, {success: function () {
+			// 	debugger
+
+			// }.bind(this)});
+
+			$.post('mail.php', this.orderModel.toJSON());
 		},
 
 		changeSize: function () {
