@@ -164,6 +164,9 @@
 			this.listenTo(this.priceModel, 'change:type_id', this.changePrice);
 			this.listenTo(this.priceModel, 'change:price', this.updatePrice);
 
+			this.listenTo(this.orderModel, 'change:mail', this.toogleButton);
+			this.listenTo(this.orderModel, 'change:phone', this.toogleButton);
+
 			this.changeSize();
 			this.changeType();
 		},
@@ -173,7 +176,17 @@
 			'change input[name="paper"]': 'changeType',
 			'change #mail': 'changeMail',
 			'change #phone': 'changePhone',
-			'click button:first': 'submit'
+			'click #confirm': 'submit'
+		},
+
+		toogleButton: function () {
+			if (this.orderModel.get('emeil')) {
+				$('#confirm').removeClass('disabled');
+				$('#confirm').addClass('enabled');
+			} else {
+				$('#confirm').addClass('disabled');
+				$('#confirm').removeClass('enabled');
+			}
 		},
 
 		changeMail: function () {
@@ -187,13 +200,10 @@
 		},
 
 		submit: function (event) {
-			// window.alert(JSON.stringify(this.orderModel.toJSON()));		
-			// this.orderModel.save(null, {success: function () {
-			// 	debugger
-
-			// }.bind(this)});
-
-			$.post('mail.php', this.orderModel.toJSON());
+			if (this.orderModel.get('emeil')) {
+				$.post('mail.php', this.orderModel.toJSON());
+				closeDialog();
+			}
 		},
 
 		changeSize: function () {
